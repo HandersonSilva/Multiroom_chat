@@ -71,31 +71,8 @@
 		<div class="container">
             <div class="row conversa" id="conversa">
 				<div class="col-md-1"></div>
-				<div class="col-md-10">
-					<div class="dialogo">
-						<h4>Jorge</h4>
-						<p>Fala José, blz cara?</p>
-					</div>
-					
-					<div class="dialogo">
-						<h4>José</h4>
-						<p>Opa, tudo certo!</p>
-					</div>
-					
-					<div class="dialogo">
-						<h4>Jorge</h4>
-						<p>Vai estudar mais sobre NodeJS hoje?</p>
-					</div>
-					
-					<div class="dialogo">
-						<h4>José</h4>
-						<p>Sim, com certeza. Vamos trabalhar com Websockets hoje, o assunto é bem interessante</p>
-					</div>
-					
-					<div class="dialogo">
-						<h4>Jorge</h4>
-						<p>Show de bola, comunicação bi-direcional em páginas ou sistemas web é muito bacana mesmo</p>
-					</div>
+				<div class="col-md-10"id='dialogos'>
+						<!--existe uma class dialogo no css-->			
 				</div>
 				<div class="col-md-1"></div>
                 
@@ -103,21 +80,8 @@
 			
 			<div class="row participantes" id="participantes" style="display:none">
 				<div class="col-md-1"></div>
-				<div class="col-md-10">
-					<span class="participante">
-						<img src="images/ico_usuario.png" />
-						Jorge
-					</span>
+				<div class="col-md-10"id="pessoas">
 					
-					<span class="participante">
-						<img src="images/ico_usuario.png" />
-						José
-					</span>
-					
-					<span class="participante">
-						<img src="images/ico_usuario.png" />
-						Fernando
-					</span>
 				</div>
 				<div class="col-md-1"></div>
                 
@@ -127,16 +91,18 @@
 		<nav class="navbar navbar-default navbar-fixed-bottom" role="navigation">
 			<div class="container">
 				<div class="panel-body campo-mensagem">
-					<form>
+					
 						<div class="col-md-12">
-							<div class="input-group">
-								<input type="text" class="form-control" placeholder="Mensagem">
-								<span class="input-group-btn">
-									<button class="btn btn-default" type="button">></button>
-								</span>
-							</div>
+								<div class="input-group">
+									<input type="text" class="form-control" placeholder="Mensagem" id='mensagem'>
+									<input type="hidden" value="<%= dadosForm.apelido%>" id="apelido">
+									<input type="hidden" value="0" id="participanteAtualizado">
+									<span class="input-group-btn">
+										<button class="btn btn-default" type="button" id="enviar_mensagem" >></button>
+									</span>
+								</div>
 						</div>
-					</form>
+					
 				</div>
 			</div>
 		</nav>		
@@ -146,7 +112,66 @@
 		<script src="/socket.io/socket.io.js"></script>
 		<!--criando a conexão com o server-->
 		<script>
+		     //caminho a onde o server esta escutando
 			var socket = io('http://localhost:8080');
+			//pegando o enter 
+			$( '#mensagem' ).keypress(function( event ) {
+  				if ( event.which == 13 ) {
+    				 socket.emit(
+						'msgParaServidor',//evento para o servidor
+						{apelido:$('#apelido').val(),//passando dados para o server
+						mensagem:$('#mensagem').val(),
+						contParticipante:$('#participanteAtualizado').val()
+						}
+						);
+					//limpar o campo da msg
+					
+					$('#mensagem').val(" ");
+					$('#participanteAtualizado').val(1);
+ 					 };
+			});
+
+			$('#enviar_mensagem').click(function(){//pegar o click do botão com jquery
+					socket.emit(
+						'msgParaServidor',//evento para o servidor
+						{apelido:$('#apelido').val(),//passando dados para o server
+						mensagem:$('#mensagem').val(),
+						contParticipante:$('#participanteAtualizado').val()
+						}
+						);
+					//limpar o campo da msg
+				
+					$('#mensagem').val(" ");
+					$('#participanteAtualizado').val(1);
+				});
+
+			//função on do cliente 
+			socket.on('msgParaClient',function(data){
+				//alert(data.apelido +'\n'+data.msg);
+				
+				//configurar a div dialogos
+				var html ='';
+				html+='<div class="dialogo">';
+					html+='<h4>'+data.apelido+'</h4>';
+					html+= '<p>'+data.mensagem+'</p>';	
+				html+='</div>';
+				//setar o html com jquery
+				$('#dialogos').append(html);
+				//setar a barra de rolagem para acompanhar as msg
+				window.scrollTo(0,document.body.scrollHeight);
+			});
+
+			socket.on('listaParticipantes',function(data){
+				//configurar a div span
+				var html ='';
+				html+='<span class="participante">';
+					html+=data.apelido;
+					html+='<img src="images/ico_usuario.png"> ';
+				html+='</span>';
+				//setar o html com jquery
+				$('#pessoas').append(html);
+
+			});
 		</script>
 		
 	</body>

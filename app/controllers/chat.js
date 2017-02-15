@@ -1,8 +1,5 @@
 ﻿module.exports.viewChat = function(application,req,res){
-      
-
-        res.render('chat');
-    
+        res.render('index',{validacao:{}});
 }
 
 module.exports.dadosChat = function(application,req,res){
@@ -14,6 +11,13 @@ module.exports.dadosChat = function(application,req,res){
               res.render('index',{validacao:erros});
               return;
       }
-        res.render('chat');
+      //Enviando dados para o usuario via socket.io
+      application.get('io').emit(
+              'msgParaClient',//evento
+              {apelido:dadosForm.apelido,mensagem:'conectou-se ao chat'}//dados a serem passados
+                                  );
+        console.log(dadosForm);
+        //renderizando a view
+        res.render('chat',{dadosForm:dadosForm});
     
 }
