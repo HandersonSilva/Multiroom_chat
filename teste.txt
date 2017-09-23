@@ -1,2 +1,5 @@
 teste merge
 testando o fork
+You should use  #git pull
+ that´s command do a #git fetch 
+and next do the #git merge
